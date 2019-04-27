@@ -102,6 +102,7 @@ var gameState = {
     foodCitizens : [],
     stockedFood : [],
     heads: [],
+    rowTimer: 3000,
 
     getFirstHeadForColumn : function(column) {
         for (var i  = 0; i < this.heads.length;i++) {
@@ -376,7 +377,7 @@ var gameState = {
         }
 
         timer = game.time.create(false);
-        timer.loop(3500, ()=>{gameState.headPusher();}, this);
+        //timer.loop(3500, ()=>{gameState.headPusher();}, this);
         timer.start();
     },
     headPusher: function() {
@@ -407,9 +408,15 @@ var gameState = {
             }
             else this.foodKingSprite.frame = 0;
         }
+
+        var deltaTime = game.time.elapsed;
         /*if (this.foodCitizens.length < 5) {
             this.foodCitizens.push(createRandomFoodCitizen());
         }*/
-        
+        this.rowTimer -= deltaTime;
+        if (this.rowTimer <= 0) {
+            this.headPusher();
+            this.rowTimer = 3500;
+        }
     }
 }
