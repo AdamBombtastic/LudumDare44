@@ -23,20 +23,20 @@ function canFoodKingMove(sprite) {
     return true;
 }
 
-function createFoodCitizen(type,x=getRandomInt(320,600),y=getRandomInt(0,360)) {
+function createFoodCitizen(type,x=getRandomInt(320,600),y=getRandomInt(0,360),size=16) {
     var mySprite = null;
     switch (type) {
         case foodTypes.CARBS:
-        mySprite = createRectangle(x,y,16,16,0xFFFF11);
+        mySprite = createRectangle(x,y,size,size,0x55FF88);
         break;
         case foodTypes.PROTEIN:
-        mySprite = createRectangle(x,y,16,16,0xFFEE22);
+        mySprite = createRectangle(x,y,size,size,0xFFEE22);
         break;
         case foodTypes.FATS:
-        mySprite = createRectangle(x,y,16,16,0xFF6666);
+        mySprite = createRectangle(x,y,size,size,0xFF6666);
         break;
         case foodTypes.ALCOHOL:
-        mySprite = createRectangle(x,y,16,16,0xFFFFFF);
+        mySprite = createRectangle(x,y,size,size,0xFFFFFF);
         break;
     }
     mySprite.foodType = type;
@@ -44,6 +44,13 @@ function createFoodCitizen(type,x=getRandomInt(320,600),y=getRandomInt(0,360)) {
 }
 function createRandomFoodCitizen() {
     return createFoodCitizen(getRandomInt(0,3));
+}
+function createHeadRow(size=4) {
+    var row = [];
+    for (var i = 0; i < size; i++) {
+        row.push(createFoodCitizen(getRandomInt(0,3),16+(80*i),0,32));
+    }
+    return row;
 }
 
 const foodTypes = {
@@ -66,18 +73,41 @@ var gameState = {
     keyR : null,
     inputButtonSpriteMap : null,
     inputButtonStockMap : {},
+    inputButtonColumnMap : null,
     leftKeyList : [],
     foodCitizens : [],
     stockedFood : [],
+    heads: [],
 
+    getFirstHeadForColumn : function(column) {
+        for (var i  = 0; i < this.heads.length;i++) {
+            row = this.heads[i];
+            if (row[column] != null) return row[column];
+        }
+        return null;
+    },
+    checkHeadDamage : function(myKey,type) {
+        var columnIndex = this.inputButtonColumnMap[myKey];
+        if (columnIndex != null && this.heads.length > 0) {
+            var head = this.getFirstHeadForColumn(columnIndex);
+            if (head != null && head.foodType == type) {
+                head.destroy();
+                this.heads[0][columnIndex] = null;
+            }
+            else {
+                //Sad day;
+            }
+        }
+    },
     fireStock : function() {
         for (var key in this.inputButtonStockMap) {
             const stock = this.inputButtonStockMap[key];
             const myKey = key;
             if (stock != null) {
                 var myTween = game.add.tween(stock);
-                myTween.to({y:0},100,Phaser.Easing.Linear.None);
+                myTween.to({y:-32},150,Phaser.Easing.Linear.None);
                 myTween.onComplete.add(function() {
+                    this.checkHeadDamage(myKey,stock.foodType);
                     stock.destroy();
                     gameState.inputButtonStockMap[myKey] = null;
                 },this);
@@ -94,9 +124,19 @@ var gameState = {
             var myStock = this.stockedFood[i];
             this.stockedFood[i].x = 332+(i*20);
             this.stockedFood[i].y = 426;
-            this.stockedFood[i].alpha = (i > 9) ? 0 : 1;
+            this.stockedFood[i].alpha = (i > 13) ? 0 : 1;
         }
         return stock;
+    },
+    pushNewRow : function(size=4) {
+        this.heads.push(createHeadRow(size));
+        for (var i = 0; i < this.heads.length; i++) {
+            var row = this.heads[i];
+            for (var head of row) {
+                
+                if (head != null) head.y = ((this.heads.length -1) - i) * 80;
+            }
+        }
     },
     create : function() {
         game.stage.backgroundColor = "#4488AA";
@@ -163,13 +203,25 @@ var gameState = {
             "69" : null,
             "82" : null,
         }
+        this.inputButtonColumnMap = {
+            "81" : 0,
+            "87" : 1,
+            "69" : 2,
+            "82" : 3,
+        }
         this.foodCitizens.push(createRandomFoodCitizen());
         this.foodCitizens.push(createRandomFoodCitizen());
         this.foodCitizens.push(createRandomFoodCitizen());
         this.foodCitizens.push(createRandomFoodCitizen());
         this.foodCitizens.push(createRandomFoodCitizen());
-    },
 
+        timer = game.time.create(false);
+        timer.loop(5000, ()=>{gameState.headPusher();}, this);
+        timer.start();
+    },
+    headPusher: function() {
+        gameState.pushNewRow(getRandomInt(1,4));
+    },
     update : function() {
         if (game.input.mousePointer.isDown) {
             console.log({x:game.input.mousePointer.x, y: game.input.mousePointer.y});
@@ -203,7 +255,7 @@ var gameState = {
                 var stock = this.stockedFood.length;
                 var item = (createFoodCitizen(citizen.foodType,332+(stock*20),426));
                 this.stockedFood.push(item);
-                if (stock > 10) item.alpha = 0;
+                if (stock > 13) item.alpha = 0;
                 citizen.destroy();
             }
             else staying.push(citizen);
