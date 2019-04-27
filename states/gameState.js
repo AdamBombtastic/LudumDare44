@@ -81,7 +81,7 @@ function createHeadRow(size=4) {
        for (var i = 0; i < 4; i++) {
            var temp = row[i];
            if (temp != null) {
-               temp.x = 16+(80*i);
+               temp.x = 24+(80*i);
                temp.y = 0;
            }
        }
@@ -114,9 +114,16 @@ var gameState = {
     foodCitizens : [],
     stockedFood : [],
     heads: [],
-    rowTimer: 3000,
+    rowTime : 3500,
+    rowTimer: 0,
+    pointTimer : 1000,
     calories: 100,
-
+    score: 0,
+    multiplier: 1,
+    headSize: 1,
+    rowCount : 0,
+    stage : 1,
+    
 
     getFirstHeadForColumn : function(column) {
         for (var i  = 0; i < this.heads.length;i++) {
@@ -149,6 +156,8 @@ var gameState = {
             }
             this.heads = [];
             console.log("Got em all");
+            this.calories +=25; 
+            this.calories = (this.calories > 100) ? 100 : this.calories;
         }
     },
     checkHeadDamage : function(myKey,type) {
@@ -158,6 +167,7 @@ var gameState = {
             if (head != null && head.foodType == type) {
                 head.destroy();
                 this.heads[0][columnIndex] = null;
+                this.score += 10 * gameState.multiplier;
                 return true;
             }
             else {
@@ -284,6 +294,10 @@ var gameState = {
         
         this.calorieLifeBar = createRectangle(370,454,245*(this.calories/100),20,0x2266FF);
 
+        var textStyle = { font: "24px Arial", fill: "#ffEEFF"};
+
+        this.scoreText = game.add.text(368, 397, "Score: " + this.score, textStyle);
+
 
         this.keyUp = game.input.keyboard.addKey(Phaser.Keyboard.UP);
         this.keyDown = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
@@ -391,7 +405,7 @@ var gameState = {
         this.spaceKey.onDown.add(function(key) {
             this.inputButtonSpriteMap["SPACE"].alpha = 0.5;
             gameState.fireStock();
-            gameState.calories -= 1;
+            gameState.calories -= 2;
         },this);
         this.spaceKey.onUp.add(function(key) {
             this.inputButtonSpriteMap["SPACE"].alpha = 1;
@@ -429,20 +443,35 @@ var gameState = {
         timer.start();
     },
     headPusher: function() {
-        gameState.pushNewRow(getRandomInt(1,4));
+        gameState.pushNewRow(getRandomInt(1,this.headSize));
         if (this.heads.length > 4) {
             var killRow = this.heads.splice(0,1)[0];
             for (var i = 0; i < killRow.length;i++) {
                 var killHead = killRow[i];
+                if (killHead != null && killHead.alive) {
+                    this.calories-=25;
+                    this.calories = (this.calories < 0) ? 0 : this.calories;
+                }
                 if (killHead != null) killHead.destroy();
                 killRow[i] = null;
             }
+            this.rowCount +=1;
+            if (this.rowCount % 5 == 0) {
+                if (this.headSize < 4) this.headSize += 1;
+                if (this.headSize == 4 && this.rowTime > 2000) {
+                    this.rowTime -= 100;
+                }
+                if (this.rowCount % 10) {
+                    this.multiplier += 1;
+                }
+            }
+        
         }
         
     },
     update : function() {
         this.calorieLifeBar.width= 245*(this.calories/100);
-
+        this.scoreText.text = "Score: " + this.score;
         if (game.input.mousePointer.isDown) {
             console.log({x:game.input.mousePointer.x, y: game.input.mousePointer.y});
         }
@@ -464,13 +493,18 @@ var gameState = {
             this.foodCitizens.push(createRandomFoodCitizen());
         }*/
         this.rowTimer -= deltaTime;
+        this.pointTimer -= deltaTime;
         if (this.rowTimer <= 0) {
             this.headPusher();
-            this.rowTimer = 3500;
+            this.rowTimer = this.rowTime;
         }
         else {
-            var distance = (80/3500)*deltaTime;
+            var distance = (80/this.rowTime)*deltaTime;
             this.moveHeads(distance);
+        }
+        if (this.pointTimer <= 0) {
+            this.score += 1;
+            this.pointTimer = 1000;
         }
     }
 }
