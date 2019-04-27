@@ -7,6 +7,51 @@ function createRectangle(x,y,width,height,color,opacity=1) {
     tempGraphics.destroy();
     return tempSprite;
 }
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function checkOverlap(spriteA, spriteB) {
+    var boundsA = spriteA.getBounds();
+    var boundsB = spriteB.getBounds();
+    return Phaser.Rectangle.intersects(boundsA, boundsB);
+}
+function canFoodKingMove(sprite) {
+    if (sprite.x < 320 || (sprite.x + sprite.width) > (CANVAS_WIDTH)) return false;
+    if (sprite.y < 0 || sprite.y + sprite.height > (CANVAS_HEIGHT - 100)) return false;
+    return true;
+}
+
+function createFoodCitizen(type,x=getRandomInt(320,600),y=getRandomInt(0,360)) {
+    var mySprite = null;
+    switch (type) {
+        case foodTypes.CARBS:
+        mySprite = createRectangle(x,y,16,16,0xFFFF11);
+        break;
+        case foodTypes.PROTEIN:
+        mySprite = createRectangle(x,y,16,16,0xFFEE22);
+        break;
+        case foodTypes.FATS:
+        mySprite = createRectangle(x,y,16,16,0xFF6666);
+        break;
+        case foodTypes.ALCOHOL:
+        mySprite = createRectangle(x,y,16,16,0xFFFFFF);
+        break;
+    }
+    mySprite.foodType = type;
+    return mySprite;
+}
+function createRandomFoodCitizen() {
+    return createFoodCitizen(getRandomInt(0,3));
+}
+
+const foodTypes = {
+    CARBS : 0,
+    PROTEIN : 1,
+    FATS : 2,
+    ALCOHOL : 3,
+}
 
 function toRightPanelCoords(pos) {
     return {x:pos.x-320,y:pos.y};
@@ -20,32 +65,74 @@ var gameState = {
     keyE : null,
     keyR : null,
     inputButtonSpriteMap : null,
+    inputButtonStockMap : {},
     leftKeyList : [],
+    foodCitizens : [],
+    stockedFood : [],
 
-    
+    popStock : function() {
+        var stock = null;
+        if (this.stockedFood.length > 0) {
+            stock = this.stockedFood.splice(0,1);
+        }
+        for (var i = 0; i < this.stockedFood.length; i++) {
+            var myStock = this.stockedFood[i];
+            this.stockedFood[i].x = 332+(i*20);
+            this.stockedFood[i].y = 426;
+            this.stockedFood[i].alpha = (i > 9) ? 0 : 1;
+        }
+        return stock;
+    },
     create : function() {
         game.stage.backgroundColor = "#4488AA";
 
         var sidePanel = createRectangle(0,0,320,380,0x000000);
-        var inputPanel = createRectangle(0,380,640,100,0xFFFF11);
+        var inputPanel = createRectangle(0,380,640,100,0x444444);
         
         this.foodKingSprite = createRectangle(380,240,32,32,0xFFF5555);
 
-       
+        
 
 
         this.keyUp = game.input.keyboard.addKey(Phaser.Keyboard.UP);
         this.keyDown = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
         this.keyLeft = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
         this.keyRight = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
-        this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACE);
+        this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
         this.keyQ = game.input.keyboard.addKey(Phaser.Keyboard.Q);
         this.keyW = game.input.keyboard.addKey(Phaser.Keyboard.W);
         this.keyE = game.input.keyboard.addKey(Phaser.Keyboard.E);
         this.keyR = game.input.keyboard.addKey(Phaser.Keyboard.R);
 
+        
+
         this.leftKeyList = [this.keyQ, this.keyW, this.keyE, this.keyR];
+
+        for (var key of this.leftKeyList) {
+           key.onDown.add(function(key) {
+                this.inputButtonSpriteMap[key.keyCode].alpha = 0.5;
+                if (this.inputButtonStockMap[key.keyCode] == null) {
+                    var stock = this.popStock();
+                    if (stock != null) {
+                        stock = stock[0];
+                        this.inputButtonStockMap[key.keyCode] = stock;
+                        stock.x = this.inputButtonSpriteMap[key.keyCode].x;
+                        stock.y = this.inputButtonSpriteMap[key.keyCode].y;
+                    }
+                }
+           },this);
+           key.onUp.add(function(key) {
+            this.inputButtonSpriteMap[key.keyCode].alpha = 1;
+       },this);
+        }
+
+        this.spaceKey.onDown.add(function(key) {
+            this.inputButtonSpriteMap["SPACE"].alpha = 0.5;
+        },this);
+        this.spaceKey.onUp.add(function(key) {
+            this.inputButtonSpriteMap["SPACE"].alpha = 1;
+        },this);
 
         this.inputButtonSpriteMap = {
             "81" : createRectangle(16,388,64,64,0x7722FF),
@@ -54,37 +141,53 @@ var gameState = {
             "82" : createRectangle(236,388,64,64,0x7722FF),
             "SPACE" : createRectangle(8,456, 304, 16, 0x7722FF),
         }
+        this.inputButtonStockMap = {
+            "81" : null,
+            "87" : null,
+            "69" : null,
+            "82" : null,
+        }
+        this.foodCitizens.push(createRandomFoodCitizen());
+        this.foodCitizens.push(createRandomFoodCitizen());
+        this.foodCitizens.push(createRandomFoodCitizen());
+        this.foodCitizens.push(createRandomFoodCitizen());
+        this.foodCitizens.push(createRandomFoodCitizen());
     },
 
     update : function() {
         if (game.input.mousePointer.isDown) {
             console.log({x:game.input.mousePointer.x, y: game.input.mousePointer.y});
         }
-        for (var key of this.leftKeyList) {
-            if (key.isDown) {
-                if (this.inputButtonSpriteMap[key.keyCode] != null) {
-                    this.inputButtonSpriteMap[key.keyCode].alpha = 0.5;
-                }
-            }
-            else {
-                if (this.inputButtonSpriteMap[key.keyCode] != null) {
-                    this.inputButtonSpriteMap[key.keyCode].alpha = 1;
-                }
-            }
-        }
-
+        
+        var tempPos = {x: this.foodKingSprite.x, y:this.foodKingSprite.y, width: this.foodKingSprite.width, height: this.foodKingSprite.height};
         if (this.keyUp.isDown) {
-            this.foodKingSprite.y-=2;
+            tempPos.y-=2;
         }
         else if (this.keyDown.isDown) {
-            this.foodKingSprite.y+=2;
+            tempPos.y+=2;
         }
 
         if (this.keyLeft.isDown) {
-            this.foodKingSprite.x-=2;
+            tempPos.x-=2;
         }
         else if (this.keyRight.isDown) {
-            this.foodKingSprite.x+=2;
+            tempPos.x+=2;
         }
+        if (canFoodKingMove(tempPos)) {
+            this.foodKingSprite.x = tempPos.x;
+            this.foodKingSprite.y = tempPos.y;
+        }
+        var staying = [];
+        for (var citizen of this.foodCitizens) {
+            if (checkOverlap(this.foodKingSprite, citizen)) {
+                var stock = this.stockedFood.length;
+                var item = (createFoodCitizen(citizen.foodType,332+(stock*20),426));
+                this.stockedFood.push(item);
+                if (stock > 10) item.alpha = 0;
+                citizen.destroy();
+            }
+            else staying.push(citizen);
+        }
+        this.foodCitizens = staying;
     }
 }
