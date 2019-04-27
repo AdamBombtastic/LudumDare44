@@ -151,9 +151,11 @@ var gameState = {
             for (var i = 0; i < this.heads.length; i++) {
                 for (var j = 0; j < this.heads[i].length; j++) {
                     var head = this.heads[i][j];
+                    gameState.score += 10 * this.multiplier
                     if (head != null) head.destroy();
                 }
             }
+            gameState.rowCount += this.heads.length;
             this.heads = [];
             console.log("Got em all");
             this.calories +=25; 
@@ -503,7 +505,7 @@ var gameState = {
             this.moveHeads(distance);
         }
         if (this.pointTimer <= 0) {
-            this.score += 1;
+            this.score += 1*gameState.multiplier;
             this.pointTimer = 1000;
         }
     }
