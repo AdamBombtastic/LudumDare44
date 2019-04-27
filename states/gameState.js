@@ -454,7 +454,8 @@ var gameState = {
         }
         if (this.rowCount % 10 == 0) {
             this.multiplier += 1;
-            this.rowTime -= 100;
+            this.rowTime -= 250;
+            if (this.rowTime < 2000) this.rowTime = 2000;
         }
         this.lastRowCount = this.rowCount;
     },
