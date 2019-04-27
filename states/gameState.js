@@ -221,6 +221,15 @@ var gameState = {
     },
     headPusher: function() {
         gameState.pushNewRow(getRandomInt(1,4));
+        if (this.heads.length > 5) {
+            var killRow = this.heads.splice(0,1)[0];
+            for (var i = 0; i < killRow.length;i++) {
+                var killHead = killRow[i];
+                if (killHead != null) killHead.destroy();
+                killRow[i] = null;
+            }
+        }
+        
     },
     update : function() {
         if (game.input.mousePointer.isDown) {
