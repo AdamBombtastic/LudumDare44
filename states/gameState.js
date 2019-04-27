@@ -106,14 +106,35 @@ var gameState = {
     getFirstHeadForColumn : function(column) {
         for (var i  = 0; i < this.heads.length;i++) {
             row = this.heads[i];
-
             if (row[column] != null && row[column].alive){
-                //console.log(row[column]);
                 return row[column];
             } 
         }
         console.log("Returning null");
         return null;
+    },
+    checkSpecialDamage : function() {
+        var fireMap = this.inputButtonStockMap;
+        var success = true;
+        for (var key in fireMap) {
+            if (key != null && fireMap[key] != null) {
+                var type = fireMap[key].foodType;
+                success = success & this.checkHeadDamage(key,type);
+            }
+            else if (key == "SPACE") continue;
+            else success = false;
+        }
+        if (success) {
+            //clear rows;
+            for (var i = 0; i < this.heads.length; i++) {
+                for (var j = 0; j < this.heads[i].length; j++) {
+                    var head = this.heads[i][j];
+                    if (head != null) head.destroy();
+                }
+            }
+            this.heads = [];
+            console.log("Got em all");
+        }
     },
     checkHeadDamage : function(myKey,type) {
         var columnIndex = this.inputButtonColumnMap[myKey];
@@ -122,24 +143,37 @@ var gameState = {
             if (head != null && head.foodType == type) {
                 head.destroy();
                 this.heads[0][columnIndex] = null;
+                return true;
             }
             else {
-                //Sad day;
+                
             }
         }
+        return false;
     },
     fireStock : function() {
         for (var key in this.inputButtonStockMap) {
             const stock = this.inputButtonStockMap[key];
             const myKey = key;
+            var addedCheck = false;
             if (stock != null) {
                 var myTween = game.add.tween(stock);
                 myTween.to({y:-32},150,Phaser.Easing.Linear.None);
-                myTween.onComplete.add(function() {
-                    this.checkHeadDamage(myKey,stock.foodType);
-                    stock.destroy();
-                    gameState.inputButtonStockMap[myKey] = null;
-                },this);
+                if (!addedCheck) {
+                    myTween.onComplete.add(function() {
+                        this.checkSpecialDamage();
+                        stock.destroy();
+                        gameState.inputButtonStockMap[myKey] = null;
+                    },this);
+                    addedCheck = true;
+                }
+                else {
+                    myTween.onComplete.add(function() {
+                        //this.checkHeadDamage(myKey,stock.foodType);
+                        stock.destroy();
+                        gameState.inputButtonStockMap[myKey] = null;
+                    },this);
+                }
                 myTween.start();
             }
         }
@@ -342,11 +376,11 @@ var gameState = {
         }
 
         timer = game.time.create(false);
-        timer.loop(4000, ()=>{gameState.headPusher();}, this);
+        timer.loop(3500, ()=>{gameState.headPusher();}, this);
         timer.start();
     },
     headPusher: function() {
-        gameState.pushNewRow(getRandomInt(1,3));
+        gameState.pushNewRow(getRandomInt(1,4));
         if (this.heads.length > 4) {
             var killRow = this.heads.splice(0,1)[0];
             for (var i = 0; i < killRow.length;i++) {
