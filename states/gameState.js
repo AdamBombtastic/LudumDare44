@@ -108,7 +108,7 @@ var gameState = {
             row = this.heads[i];
 
             if (row[column] != null && row[column].alive){
-                console.log(row[column]);
+                //console.log(row[column]);
                 return row[column];
             } 
         }
@@ -191,9 +191,12 @@ var gameState = {
         var proteinSection = createRectangle(560,20,80,280,0xFFEE22);
         var carbSection = createRectangle(320,20,80,280,0x55FF88);  
         
-        this.foodKingSprite = createRectangle(240,240,32,32,0xFFF5555);
+        this.foodKingSprite = game.add.sprite(240,240,"spr_foodKing");//createRectangle(240,240,32,32,0xFFF5555);
+        this.foodKingSprite.scale.setTo(2,2);
         this.foodKingSprite.centerX = (320 + (320/2));
         this.foodKingSprite.centerY = 190 - 16;
+        this.foodKingSprite.isLeft = false;
+        this.foodKingSprite.isUp = false;
 
         const foodKingStartX = (320 + (320/2));
         const foodKingStartY = 190 - 16;
@@ -221,6 +224,7 @@ var gameState = {
                 gameState.addFoodStock(foodTypes.CARBS);
             });
             myTween.start();
+            this.foodKingSprite.isLeft = true;
         },this);
         this.keyRight.onDown.add(function() {
             var myTween = game.add.tween(this.foodKingSprite);
@@ -229,6 +233,7 @@ var gameState = {
                 gameState.addFoodStock(foodTypes.PROTEIN);
             });
             myTween.start();
+            this.foodKingSprite.isLeft = false;
         },this);
         this.keyUp.onDown.add(function() {
             var myTween = game.add.tween(this.foodKingSprite);
@@ -237,6 +242,7 @@ var gameState = {
                 gameState.addFoodStock(foodTypes.FATS);
             });
             myTween.start();
+            this.foodKingSprite.isUp = true;
         },this);
         this.keyDown.onDown.add(function() {
             var myTween = game.add.tween(this.foodKingSprite);
@@ -245,6 +251,7 @@ var gameState = {
                 gameState.addFoodStock(foodTypes.ALCOHOL);
             });
             myTween.start();
+            this.foodKingSprite.isUp = false;
         },this);
         this.keyLeft.onUp.add(function() {
             var myTween = game.add.tween(this.foodKingSprite);
@@ -289,8 +296,8 @@ var gameState = {
                     if (stock != null) {
                         stock = stock[0];
                         this.inputButtonStockMap[key.keyCode] = stock;
-                        stock.x = this.inputButtonSpriteMap[key.keyCode].x;
-                        stock.y = this.inputButtonSpriteMap[key.keyCode].y;
+                        stock.centerX = this.inputButtonSpriteMap[key.keyCode].centerX;
+                        stock.centerY = this.inputButtonSpriteMap[key.keyCode].centerY;
                     }
                 }
            },this);
@@ -314,6 +321,13 @@ var gameState = {
             "82" : createRectangle(236,388,64,64,0x7722FF),
             "SPACE" : createRectangle(8,456, 304, 16, 0x7722FF),
         }
+        this.cannonSprites = [];
+        for (var i = 0; i < 4; i++) {
+            var temp = game.add.sprite(21+(i*72),348,"spr_cannon");
+            temp.scale.setTo(2,2);
+            this.cannonSprites.push(temp);
+        }
+        
         this.inputButtonStockMap = {
             "81" : null,
             "87" : null,
@@ -326,19 +340,14 @@ var gameState = {
             "69" : 2,
             "82" : 3,
         }
-        //this.foodCitizens.push(createRandomFoodCitizen());
-        //this.foodCitizens.push(createRandomFoodCitizen());
-        //this.foodCitizens.push(createRandomFoodCitizen());
-        //this.foodCitizens.push(createRandomFoodCitizen());
-        //this.foodCitizens.push(createRandomFoodCitizen());
 
         timer = game.time.create(false);
-        timer.loop(5000, ()=>{gameState.headPusher();}, this);
+        timer.loop(4000, ()=>{gameState.headPusher();}, this);
         timer.start();
     },
     headPusher: function() {
-        gameState.pushNewRow(/*getRandomInt(1,4)*/getRandomInt(1,2));
-        if (this.heads.length > 5) {
+        gameState.pushNewRow(getRandomInt(1,3));
+        if (this.heads.length > 4) {
             var killRow = this.heads.splice(0,1)[0];
             for (var i = 0; i < killRow.length;i++) {
                 var killHead = killRow[i];
@@ -352,46 +361,21 @@ var gameState = {
         if (game.input.mousePointer.isDown) {
             console.log({x:game.input.mousePointer.x, y: game.input.mousePointer.y});
         }
-        
+        if (this.foodKingSprite.isUp) {
+            if (this.foodKingSprite.isLeft) {
+                this.foodKingSprite.frame = 2;
+            }
+            else this.foodKingSprite.frame = 1;
+        }
+        else {
+            if (this.foodKingSprite.isLeft) {
+                this.foodKingSprite.frame = 3;
+            }
+            else this.foodKingSprite.frame = 0;
+        }
         /*if (this.foodCitizens.length < 5) {
             this.foodCitizens.push(createRandomFoodCitizen());
         }*/
-
-        var tempPos = {x: this.foodKingSprite.x, y:this.foodKingSprite.y, width: this.foodKingSprite.width, height: this.foodKingSprite.height};
-        /*if (this.keyUp.isDown) {
-            tempPos.y-=2;
-        }
-        else if (this.keyDown.isDown) {
-            tempPos.y+=2;
-        }
-
-        if (this.keyLeft.isDown) {
-            tempPos.x-=2;
-        }
-        else if (this.keyRight.isDown) {
-            tempPos.x+=2;
-        }
-        if (canFoodKingMove(tempPos)) {
-            this.foodKingSprite.x = tempPos.x;
-            this.foodKingSprite.y = tempPos.y;
-        }*/
-        //var staying = [];
-        /*for (var citizen of this.foodCitizens) {
-            if (checkOverlap(this.foodKingSprite, citizen)) {
-                var stock = this.stockedFood.length;
-                var item = (createFoodCitizen(citizen.foodType,332+(stock*20),426));
-                this.stockedFood.unshift(item);
-                if (stock > 13) item.alpha = 0;
-                for (var i = 0; i < this.stockedFood.length; i++) {
-                    var myStock = this.stockedFood[i];
-                    this.stockedFood[i].x = 332+(i*20);
-                    this.stockedFood[i].y = 426;
-                    this.stockedFood[i].alpha = (i > 13) ? 0 : 1;
-                }
-                citizen.destroy();
-            }
-            else staying.push(citizen);
-        }
-        this.foodCitizens = staying;*/
+        
     }
 }
