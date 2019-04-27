@@ -1,3 +1,4 @@
+var finalScore = 0;
 function createRectangle(x,y,width,height,color,opacity=1) {
     var tempGraphics = game.add.graphics(0,0);
         tempGraphics.beginFill(color,opacity);
@@ -275,6 +276,31 @@ var gameState = {
     create : function() {
         game.stage.backgroundColor = "#4488AA";
 
+
+        this.mySprite = null;
+        this.lastPoint= {};
+        this.keyQ = null;
+        this.keyW = null;
+        this.keyE = null;
+        this.keyR = null;
+        this.inputButtonSpriteMap = null;
+        this.inputButtonStockMap = {};
+        this.inputButtonColumnMap = null;
+        this.leftKeyList = [];
+        this.foodCitizens = [];
+        this.stockedFood = [];
+        this.heads=[];
+        this.rowTime = 3500;
+        this.rowTimer = 0;
+        this.pointTimer = 1000;
+        this.calories = 100;
+        this.score = 0;
+        this.multiplier = 1;
+        this.headSize = 1;
+        this.rowCount = 0;
+        this.lastRowCount = null;
+        this.stage = 1;
+
         var sidePanel = createRectangle(0,0,320,380,0x000000);
         var inputPanel = createRectangle(0,380,640,100,0x444444);
 
@@ -479,6 +505,9 @@ var gameState = {
     },
     update : function() {
         this.calorieLifeBar.width= 245*(this.calories/100);
+        if (this.calories <= 0) {
+            game.state.start("score",true,false,null);
+        }
         this.scoreText.text = "Score: " + this.score;
         if (game.input.mousePointer.isDown) {
             console.log({x:game.input.mousePointer.x, y: game.input.mousePointer.y});
