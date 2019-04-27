@@ -29,20 +29,32 @@ function canFoodKingMove(sprite) {
     return true;
 }
 
-function createFoodCitizen(type,x=getRandomInt(320,600),y=getRandomInt(0,360),size=16) {
+function createFoodCitizen(type,x=getRandomInt(320,600),y=getRandomInt(0,360),size=16, spriteKey=null) {
     var mySprite = null;
     switch (type) {
         case foodTypes.CARBS:
-        mySprite = createRectangle(x,y,size,size,0x55FF88);
+        mySprite = (spriteKey != null) ? game.add.sprite(x,y,spriteKey) : createRectangle(x,y,size,size,0x55FF88);
+        mySprite.width = size;
+        mySprite.height = size;
+        mySprite.frame = 0;
         break;
         case foodTypes.PROTEIN:
-        mySprite = createRectangle(x,y,size,size,0xFFEE22);
+        mySprite = (spriteKey != null) ? game.add.sprite(x,y,spriteKey) : createRectangle(x,y,size,size,0xFFEE22);
+        mySprite.width = size;
+        mySprite.height = size;
+        mySprite.frame = 2;
         break;
         case foodTypes.FATS:
-        mySprite = createRectangle(x,y,size,size,0xFF6666);
+        mySprite = (spriteKey != null) ? game.add.sprite(x,y,spriteKey) : createRectangle(x,y,size,size,0xFF6666);
+        mySprite.width = size;
+        mySprite.height = size;
+        mySprite.frame = 3;
         break;
         case foodTypes.ALCOHOL:
-        mySprite = createRectangle(x,y,size,size,0xFFFFFF);
+        mySprite = (spriteKey != null) ? game.add.sprite(x,y,spriteKey) : createRectangle(x,y,size,size,0xFFFFFF);
+        mySprite.width = size;
+        mySprite.height = size;
+        mySprite.frame = 1;
         break;
     }
     mySprite.foodType = type;
@@ -55,12 +67,12 @@ function createHeadRow(size=4) {
     var row = [];
     if (size == 4) {
         for (var i = 0; i < size; i++) {
-            row.push(createFoodCitizen(getRandomInt(0,3),16+(80*i),0,32));
+            row.push(createFoodCitizen(getRandomInt(0,3),16+(80*i),0,32,"spr_macros"));
         }
     }
     else {
         for (var i = 0; i < 4; i++) {
-            if (i < size) row.push(createFoodCitizen(getRandomInt(0,3),16+(80*i),0,32));
+            if (i < size) row.push(createFoodCitizen(getRandomInt(0,3),16+(80*i),0,32,"spr_macros"));
             else {
                row.push(null);
             }
@@ -103,6 +115,8 @@ var gameState = {
     stockedFood : [],
     heads: [],
     rowTimer: 3000,
+    calories: 100,
+
 
     getFirstHeadForColumn : function(column) {
         for (var i  = 0; i < this.heads.length;i++) {
@@ -183,12 +197,24 @@ var gameState = {
         var stock = null;
         if (this.stockedFood.length > 0) {
             stock = this.stockedFood.splice(0,1);
+            stock[0].width = 16;
+            stock[0].height = 16;
         }
-        for (var i = 0; i < this.stockedFood.length; i++) {
+        if (this.stockedFood.length >= 1) {
+            var topStock = this.stockedFood[0];
+            topStock.x = 326;
+            topStock.y = 388;
+            topStock.width = 32;
+            topStock.height = 32;
+
+        }
+        for (var i = 1; i < this.stockedFood.length; i++) {
             var myStock = this.stockedFood[i];
-            this.stockedFood[i].x = 332+(i*20);
-            this.stockedFood[i].y = 426;
-            this.stockedFood[i].alpha = (i > 13) ? 0 : 1;
+            this.stockedFood[i].x = 326;
+            this.stockedFood[i].y = 421 + ((i-1)*20);
+            this.stockedFood[i].alpha = (i > 5) ? 0 : 1;
+            this.stockedFood[i].width = 16;
+            this.stockedFood[i].height = 16;
         }
         return stock;
     },
@@ -213,14 +239,24 @@ var gameState = {
 
         var stock = this.stockedFood.length;
         if (stock >= 5) return;
-        var item = (createFoodCitizen(type,332+(stock*20),426));
+        var item = (createFoodCitizen(type,332+(stock*20),426,16,"spr_macros"));
         this.stockedFood.unshift(item);
         if (stock > 5) item.alpha = 0;
-        for (var i = 0; i < this.stockedFood.length; i++) {
+        if (this.stockedFood.length >= 1) {
+            var topStock = this.stockedFood[0];
+            topStock.x = 326;
+            topStock.y = 388;
+            topStock.width = 32;
+            topStock.height = 32;
+
+        }
+        for (var i = 1; i < this.stockedFood.length; i++) {
             var myStock = this.stockedFood[i];
-            this.stockedFood[i].x = 332+(i*20);
-            this.stockedFood[i].y = 426;
-            this.stockedFood[i].alpha = (i > 13) ? 0 : 1;
+            this.stockedFood[i].x = 326;
+            this.stockedFood[i].y = 421 + ((i-1)*16);
+            this.stockedFood[i].alpha = (i > 5) ? 0 : 1;
+            this.stockedFood[i].width = 16;
+            this.stockedFood[i].height = 16;
         }
     },
     create : function() {
@@ -230,14 +266,14 @@ var gameState = {
         var inputPanel = createRectangle(0,380,640,100,0x444444);
 
        
-        var fatSection = createRectangle(340,0,280,80,0xFF6666);
-        var alcoholSection = createRectangle(340,300,280,80,0xFFFFFF);
+        var fatSection = createRectangle(340,0,280,80,0xFFFF11);
+        var alcoholSection = createRectangle(340,300,280,80,0x8B4513);
 
-        var proteinSection = createRectangle(560,20,80,280,0xFFEE22);
-        var carbSection = createRectangle(320,20,80,280,0x55FF88);  
+        var proteinSection = createRectangle(560,20,80,280,0xFF2222);
+        var carbSection = createRectangle(320,20,80,280,0xFFFFFF);  
         
         this.foodKingSprite = game.add.sprite(240,240,"spr_foodKing");//createRectangle(240,240,32,32,0xFFF5555);
-        this.foodKingSprite.scale.setTo(2,2);
+        //this.foodKingSprite.scale.setTo(2,2);
         this.foodKingSprite.centerX = (320 + (320/2));
         this.foodKingSprite.centerY = 190 - 16;
         this.foodKingSprite.isLeft = false;
@@ -246,6 +282,7 @@ var gameState = {
         const foodKingStartX = (320 + (320/2));
         const foodKingStartY = 190 - 16;
         
+        this.calorieLifeBar = createRectangle(370,454,245*(this.calories/100),20,0x2266FF);
 
 
         this.keyUp = game.input.keyboard.addKey(Phaser.Keyboard.UP);
@@ -354,6 +391,7 @@ var gameState = {
         this.spaceKey.onDown.add(function(key) {
             this.inputButtonSpriteMap["SPACE"].alpha = 0.5;
             gameState.fireStock();
+            gameState.calories -= 1;
         },this);
         this.spaceKey.onUp.add(function(key) {
             this.inputButtonSpriteMap["SPACE"].alpha = 1;
@@ -369,7 +407,7 @@ var gameState = {
         this.cannonSprites = [];
         for (var i = 0; i < 4; i++) {
             var temp = game.add.sprite(21+(i*72),348,"spr_cannon");
-            temp.scale.setTo(2,2);
+            temp.frame = i;
             this.cannonSprites.push(temp);
         }
         
@@ -403,6 +441,8 @@ var gameState = {
         
     },
     update : function() {
+        this.calorieLifeBar.width= 245*(this.calories/100);
+
         if (game.input.mousePointer.isDown) {
             console.log({x:game.input.mousePointer.x, y: game.input.mousePointer.y});
         }

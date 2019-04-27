@@ -22,8 +22,9 @@ var loadState =  {
         game.load.spritesheet("ant_monster_all",IMAGE_ASSET_PATH + "ant_mon_all.png",279,348,36);*/
 
         //game.load.image("spr_foodKing", "./graphics/clubs.png");
-        game.load.image("spr_cannon","./graphics/spr_cannon.png");
-        game.load.spritesheet("spr_foodKing", "./graphics/spr_FoodKing.png",39,40,4);
+        game.load.spritesheet("spr_macros","./graphics/spr_macros.png",24,20,4);
+        game.load.spritesheet("spr_cannon","./graphics/spr_cannon.png",56,84,4);
+        game.load.spritesheet("spr_foodKing", "./graphics/spr_FoodKing.png",78,80,4);
 
     },
         
