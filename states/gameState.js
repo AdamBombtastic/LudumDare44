@@ -70,6 +70,21 @@ var gameState = {
     foodCitizens : [],
     stockedFood : [],
 
+    fireStock : function() {
+        for (var key in this.inputButtonStockMap) {
+            const stock = this.inputButtonStockMap[key];
+            const myKey = key;
+            if (stock != null) {
+                var myTween = game.add.tween(stock);
+                myTween.to({y:0},100,Phaser.Easing.Linear.None);
+                myTween.onComplete.add(function() {
+                    stock.destroy();
+                    gameState.inputButtonStockMap[myKey] = null;
+                },this);
+                myTween.start();
+            }
+        }
+    },
     popStock : function() {
         var stock = null;
         if (this.stockedFood.length > 0) {
@@ -129,6 +144,7 @@ var gameState = {
 
         this.spaceKey.onDown.add(function(key) {
             this.inputButtonSpriteMap["SPACE"].alpha = 0.5;
+            gameState.fireStock();
         },this);
         this.spaceKey.onUp.add(function(key) {
             this.inputButtonSpriteMap["SPACE"].alpha = 1;
@@ -159,6 +175,10 @@ var gameState = {
             console.log({x:game.input.mousePointer.x, y: game.input.mousePointer.y});
         }
         
+        if (this.foodCitizens.length < 5) {
+            this.foodCitizens.push(createRandomFoodCitizen());
+        }
+
         var tempPos = {x: this.foodKingSprite.x, y:this.foodKingSprite.y, width: this.foodKingSprite.width, height: this.foodKingSprite.height};
         if (this.keyUp.isDown) {
             tempPos.y-=2;
