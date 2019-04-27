@@ -122,6 +122,7 @@ var gameState = {
     multiplier: 1,
     headSize: 1,
     rowCount : 0,
+    lastRowCount: null,
     stage : 1,
     
 
@@ -154,8 +155,8 @@ var gameState = {
                     gameState.score += 10 * this.multiplier
                     if (head != null) head.destroy();
                 }
+                this.checkUpgradeDifficulty();
             }
-            gameState.rowCount += this.heads.length;
             this.heads = [];
             console.log("Got em all");
             this.calories +=25; 
@@ -444,8 +445,22 @@ var gameState = {
         //timer.loop(3500, ()=>{gameState.headPusher();}, this);
         timer.start();
     },
+    checkUpgradeDifficulty: function() {
+        if (this.lastRowCount == this.rowCount) return;
+        console.log("Good to upgrade:" + this.rowCount);
+        if (this.rowCount % 4 == 0) {
+            if (this.headSize < 4) this.headSize += 1;
+            
+        }
+        if (this.rowCount % 10 == 0) {
+            this.multiplier += 1;
+            this.rowTime -= 100;
+        }
+        this.lastRowCount = this.rowCount;
+    },
     headPusher: function() {
         gameState.pushNewRow(getRandomInt(1,this.headSize));
+        this.rowCount +=1;
         if (this.heads.length > 4) {
             var killRow = this.heads.splice(0,1)[0];
             for (var i = 0; i < killRow.length;i++) {
@@ -457,17 +472,7 @@ var gameState = {
                 if (killHead != null) killHead.destroy();
                 killRow[i] = null;
             }
-            this.rowCount +=1;
-            if (this.rowCount % 5 == 0) {
-                if (this.headSize < 4) this.headSize += 1;
-                if (this.headSize == 4 && this.rowTime > 2000) {
-                    this.rowTime -= 100;
-                }
-                if (this.rowCount % 10) {
-                    this.multiplier += 1;
-                }
-            }
-        
+            this.checkUpgradeDifficulty();
         }
         
     },
