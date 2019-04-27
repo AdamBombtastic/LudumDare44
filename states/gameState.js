@@ -12,6 +12,12 @@ function getRandomInt(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
 function checkOverlap(spriteA, spriteB) {
     var boundsA = spriteA.getBounds();
     var boundsB = spriteB.getBounds();
@@ -47,10 +53,28 @@ function createRandomFoodCitizen() {
 }
 function createHeadRow(size=4) {
     var row = [];
-    for (var i = 0; i < size; i++) {
-        row.push(createFoodCitizen(getRandomInt(0,3),16+(80*i),0,32));
+    if (size == 4) {
+        for (var i = 0; i < size; i++) {
+            row.push(createFoodCitizen(getRandomInt(0,3),16+(80*i),0,32));
+        }
     }
-    return row;
+    else {
+        for (var i = 0; i < 4; i++) {
+            if (i < size) row.push(createFoodCitizen(getRandomInt(0,3),16+(80*i),0,32));
+            else {
+               row.push(null);
+            }
+        }
+       shuffle(row);
+       for (var i = 0; i < 4; i++) {
+           var temp = row[i];
+           if (temp != null) {
+               temp.x = 16+(80*i);
+               temp.y = 0;
+           }
+       }
+    }
+  return row;
 }
 
 const foodTypes = {
@@ -82,8 +106,13 @@ var gameState = {
     getFirstHeadForColumn : function(column) {
         for (var i  = 0; i < this.heads.length;i++) {
             row = this.heads[i];
-            if (row[column] != null) return row[column];
+
+            if (row[column] != null && row[column].alive){
+                console.log(row[column]);
+                return row[column];
+            } 
         }
+        console.log("Returning null");
         return null;
     },
     checkHeadDamage : function(myKey,type) {
@@ -133,7 +162,6 @@ var gameState = {
         for (var i = 0; i < this.heads.length; i++) {
             var row = this.heads[i];
             for (var head of row) {
-                
                 if (head != null) head.y = ((this.heads.length -1) - i) * 80;
             }
         }
@@ -220,7 +248,7 @@ var gameState = {
         timer.start();
     },
     headPusher: function() {
-        gameState.pushNewRow(getRandomInt(1,4));
+        gameState.pushNewRow(/*getRandomInt(1,4)*/getRandomInt(1,2));
         if (this.heads.length > 5) {
             var killRow = this.heads.splice(0,1)[0];
             for (var i = 0; i < killRow.length;i++) {
