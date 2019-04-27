@@ -506,6 +506,7 @@ var gameState = {
     update : function() {
         this.calorieLifeBar.width= 245*(this.calories/100);
         if (this.calories <= 0) {
+            finalScore = this.score;
             game.state.start("score",true,false,null);
         }
         this.scoreText.text = "Score: " + this.score;
