@@ -201,11 +201,21 @@ var gameState = {
             }
         }
     },
+    moveHeads : function(amount) {
+        for (var i = 0; i < this.heads.length; i++) {
+            var row = this.heads[i];
+            for (var head of row) {
+                if (head != null) head.y += amount;
+            }
+        }
+    },
     addFoodStock : function(type) {
+
         var stock = this.stockedFood.length;
+        if (stock >= 5) return;
         var item = (createFoodCitizen(type,332+(stock*20),426));
         this.stockedFood.unshift(item);
-        if (stock > 13) item.alpha = 0;
+        if (stock > 5) item.alpha = 0;
         for (var i = 0; i < this.stockedFood.length; i++) {
             var myStock = this.stockedFood[i];
             this.stockedFood[i].x = 332+(i*20);
@@ -417,6 +427,10 @@ var gameState = {
         if (this.rowTimer <= 0) {
             this.headPusher();
             this.rowTimer = 3500;
+        }
+        else {
+            var distance = (80/3500)*deltaTime;
+            this.moveHeads(distance);
         }
     }
 }
