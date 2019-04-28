@@ -40,7 +40,7 @@ var loadState =  {
         
     create: function() {
 
-        game.state.start("game",true,false,null);
+        game.state.start("menu",true,false,null);
     }
     
 }
