@@ -126,12 +126,20 @@ var gameState = {
     lastRowCount: null,
     stage : 1,
     
-
+    getMaxInArray : function(arr) {
+        var max = arr[0];
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] > max) max = arr[i];
+        }
+        return max;
+    },
     getFirstHeadForColumn : function(column) {
         for (var i  = 0; i < this.heads.length;i++) {
             row = this.heads[i];
             if (row[column] != null && row[column].alive){
-                return row[column];
+                var temp = row[column];
+                temp.rowIndex = i;
+                return temp;
             } 
         }
         console.log("Returning null");
@@ -140,25 +148,45 @@ var gameState = {
     checkSpecialDamage : function() {
         var fireMap = this.inputButtonStockMap;
         var success = true;
+        var delRows = [];
         for (var key in fireMap) {
             if (key != null && fireMap[key] != null) {
                 var type = fireMap[key].foodType;
-                success = success & this.checkHeadDamage(key,type);
+                var returnVal = this.checkHeadDamage(key,type);
+                success = success && returnVal != -1;
+                if (success) delRows.push(returnVal);
             }
             else if (key == "SPACE") continue;
             else success = false;
         }
         if (success) {
             //clear rows;
-            for (var i = 0; i < this.heads.length; i++) {
+            var max = this.getMaxInArray(delRows);
+            delRows.push(max+1);
+            var delSet = new Set(delRows);
+            for (var k of delSet) {
+                var row = this.heads[k];
+                if (row == null) continue;
+                for (var j = 0; j < row.length; j++) {
+                    var head = row[j];
+                    if (head != null && head.alive) {
+                        gameState.score += 10 * this.multiplier
+                        head.destroy();
+                    }
+                }
+            }
+            /*(for (var i = 0; i < this.heads; i++) {
+                if (this.heads[i] == null) break;
                 for (var j = 0; j < this.heads[i].length; j++) {
                     var head = this.heads[i][j];
-                    gameState.score += 10 * this.multiplier
-                    if (head != null) head.destroy();
+                    if (head != null && head.alive) {
+                        gameState.score += 10 * this.multiplier
+                        head.destroy();
+                    }
                 }
                 this.checkUpgradeDifficulty();
-            }
-            this.heads = [];
+            }*/
+            //this.heads = this.heads.splice(0,2);
             console.log("Got em all");
             this.calories +=25; 
             this.calories = (this.calories > 100) ? 100 : this.calories;
@@ -169,16 +197,17 @@ var gameState = {
         if (columnIndex != null && this.heads.length > 0) {
             var head = this.getFirstHeadForColumn(columnIndex);
             if (head != null && head.foodType == type) {
+                var rowIndex = head.rowIndex;
                 head.destroy();
                 this.heads[0][columnIndex] = null;
                 this.score += 10 * gameState.multiplier;
-                return true;
+                return rowIndex;
             }
             else {
                 
             }
         }
-        return false;
+        return -1;
     },
     fireStock : function() {
         for (var key in this.inputButtonStockMap) {
