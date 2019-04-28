@@ -277,15 +277,15 @@ var gameState = {
         }
         if (this.stockedFood.length >= 1) {
             var topStock = this.stockedFood[0];
-            topStock.x = 312;
-            topStock.y = 394;
+            topStock.x = 333;
+            topStock.y = 395;
             topStock.width = 32;
             topStock.height = 32;
 
         }
         for (var i = 1; i < this.stockedFood.length; i++) {
             var myStock = this.stockedFood[i];
-            this.stockedFood[i].x = 364 + ((i-1)*20) + 8;
+            this.stockedFood[i].x = 379 + ((i-1)*20) + 16;
             this.stockedFood[i].y = 394; 
             this.stockedFood[i].alpha = (i > 5) ? 0 : 1;
             this.stockedFood[i].width = 20;
@@ -319,15 +319,15 @@ var gameState = {
         if (stock > 5) item.alpha = 0;
         if (this.stockedFood.length >= 1) {
             var topStock = this.stockedFood[0];
-            topStock.x = 312;
-            topStock.y = 394;
+            topStock.x = 333;
+            topStock.y = 395;
             topStock.width = 32;
             topStock.height = 32;
 
         }
         for (var i = 1; i < this.stockedFood.length; i++) {
             var myStock = this.stockedFood[i];
-            this.stockedFood[i].x = 364 + ((i-1)*20) + 8;
+            this.stockedFood[i].x = 379 + ((i-1)*20) + 16;
             this.stockedFood[i].y = 394; 
             this.stockedFood[i].alpha = (i > 5) ? 0 : 1;
             this.stockedFood[i].width = 20;
@@ -362,8 +362,10 @@ var gameState = {
         this.lastRowCount = null;
         this.stage = 1;
 
-        var sidePanel = createRectangle(0,0,320,380,0x000000);
-        var inputPanel = createRectangle(0,380,640,100,0x444444);
+        var frame = game.add.sprite(0,0,"ui_frame");
+
+        //var sidePanel = createRectangle(0,0,320,380,0x000000);
+        //var inputPanel = createRectangle(0,380,640,100,0x444444);
 
        
         var fatSection = createRectangle(340,0,280,80,0xFFFF11);
@@ -382,19 +384,19 @@ var gameState = {
         const foodKingStartX = (320 + (320/2));
         const foodKingStartY = 190 - 16;
         
-        this.calorieLifeBarBack = game.add.sprite(320,454,"ui_healthBar");
+        this.calorieLifeBarBack = game.add.sprite(330,448,"ui_healthBar");
         this.calorieLifeBarBack.frame = 1;
 
-        this.calorieLifeBar = game.add.sprite(320,454,"ui_healthBar");/*createRectangle(370,454,245*(this.calories/100),20,0x2266FF);*/
+        this.calorieLifeBar = game.add.sprite(330,448,"ui_healthBar");/*createRectangle(370,454,245*(this.calories/100),20,0x2266FF);*/
         this.calorieLifeBar.frame = 0;
 
         this.calorieCropBar = new Phaser.Rectangle(0, 0, this.calorieLifeBar.width, this.calorieLifeBar.height);
 
         this.calorieLifeBar.crop(this.calorieCropBar);
         
-        var textStyle = { font: "24px Arial", fill: "#ffEEFF"};
+        var textStyle = { font: "20px Arial", fill: "#ffEEFF"};
 
-        this.scoreText = game.add.text(520, 397, "Score: " + this.score, textStyle);
+        this.scoreText = game.add.text(520, 402, "Score: " + this.score, textStyle);
 
 
         this.keyUp = game.input.keyboard.addKey(Phaser.Keyboard.UP);
@@ -484,7 +486,7 @@ var gameState = {
 
         for (var key of this.leftKeyList) {
            key.onDown.add(function(key) {
-                this.inputButtonSpriteMap[key.keyCode].alpha = 0.5;
+                this.inputButtonSpriteMap[key.keyCode].alpha = 0;
                 if (this.inputButtonStockMap[key.keyCode] == null) {
                     var stock = this.popStock();
                     
@@ -539,10 +541,10 @@ var gameState = {
         },this);
 
         this.inputButtonSpriteMap = {
-            "81" : createRectangle(16,388,64,64,0x7722FF),
-            "87" : createRectangle(88,388,64,64,0x7722FF),
-            "69" : createRectangle(160,388,64,64,0x7722FF),
-            "82" : createRectangle(232,388,64,64,0x7722FF),
+            "81" : createRectangle(16,388,64,64,0x7722FF,0),
+            "87" : createRectangle(88,388,64,64,0x7722FF,0),
+            "69" : createRectangle(160,388,64,64,0x7722FF,0),
+            "82" : createRectangle(232,388,64,64,0x7722FF,0),
             "SPACE" : game.add.sprite(8,446,"ui_space"),
         }
         this.inputButtonSpriteMap["SPACE"].frame = 0;
@@ -625,7 +627,7 @@ var gameState = {
             game.state.start("score",true,false,null);
         }
         this.scoreText.text = "Score: " + this.score;
-        this.scoreText.x = (CANVAS_WIDTH-this.scoreText.width)-20;
+        this.scoreText.x = (CANVAS_WIDTH-this.scoreText.width)-10;
         if (game.input.mousePointer.isDown) {
             console.log({x:game.input.mousePointer.x, y: game.input.mousePointer.y});
         }
