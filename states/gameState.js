@@ -37,25 +37,50 @@ function createFoodCitizen(type,x=getRandomInt(320,600),y=getRandomInt(0,360),si
         mySprite = (spriteKey != null) ? game.add.sprite(x,y,spriteKey) : createRectangle(x,y,size,size,0x55FF88);
         mySprite.width = size;
         mySprite.height = size;
-        mySprite.frame = 0;
+        if (spriteKey.indexOf("spr_people") != -1) {
+            var isFemale = getRandomInt(1,10) % 2 == 0;
+            mySprite.animations.add("idle",isFemale ? [28,29] : [24,25]);
+            mySprite.animations.add("die",isFemale ? [28,29,30,31] : [24,25,26,27]);
+            mySprite.animations.play("idle",4,true);
+        }
+        else mySprite.frame = 0;
         break;
         case foodTypes.PROTEIN:
         mySprite = (spriteKey != null) ? game.add.sprite(x,y,spriteKey) : createRectangle(x,y,size,size,0xFFEE22);
         mySprite.width = size;
         mySprite.height = size;
-        mySprite.frame = 2;
+        if (spriteKey.indexOf("spr_people") != -1) {
+            var isFemale = getRandomInt(1,10) % 2 == 0;
+            mySprite.animations.add("idle",isFemale ? [12,13] :[8,9]);
+            mySprite.animations.add("die",isFemale ? [12,13,14,15] : [8,9,10,11]);
+            mySprite.animations.play("idle",4,true);
+        }
+        else mySprite.frame = 2;
         break;
         case foodTypes.FATS:
         mySprite = (spriteKey != null) ? game.add.sprite(x,y,spriteKey) : createRectangle(x,y,size,size,0xFF6666);
+        if (spriteKey.indexOf("spr_people") != -1) {
+            var isFemale = getRandomInt(1,10) % 2 == 0;
+            mySprite.animations.add("idle",isFemale ? [20,21] : [16,17]);
+            mySprite.animations.add("die",isFemale ? [20,21,22,23]:[16,17,18,19]);
+            mySprite.animations.play("idle",4,true);
+        }
+        else mySprite.frame = 3;
         mySprite.width = size;
         mySprite.height = size;
-        mySprite.frame = 3;
+        
         break;
         case foodTypes.ALCOHOL:
         mySprite = (spriteKey != null) ? game.add.sprite(x,y,spriteKey) : createRectangle(x,y,size,size,0xFFFFFF);
         mySprite.width = size;
         mySprite.height = size;
-        mySprite.frame = 1;
+        if (spriteKey.indexOf("spr_people") != -1) {
+            var isFemale = getRandomInt(1,10) % 2 == 0;
+            mySprite.animations.add("idle",[0,1]);
+            mySprite.animations.add("die",[0,1,2,3]);
+            mySprite.animations.play("idle",4,true);
+        }
+        else mySprite.frame = 1;
         break;
     }
     mySprite.foodType = type;
@@ -66,14 +91,15 @@ function createRandomFoodCitizen() {
 }
 function createHeadRow(size=4) {
     var row = [];
+    var peopleType = getRandomInt(1,3);
     if (size == 4) {
         for (var i = 0; i < size; i++) {
-            row.push(createFoodCitizen(getRandomInt(0,3),16+(80*i),0,32,"spr_macros"));
+            row.push(createFoodCitizen(getRandomInt(0,3),8+(80*i),0,64,"spr_people"+peopleType));
         }
     }
     else {
         for (var i = 0; i < 4; i++) {
-            if (i < size) row.push(createFoodCitizen(getRandomInt(0,3),16+(80*i),0,32,"spr_macros"));
+            if (i < size) row.push(createFoodCitizen(getRandomInt(0,3),8+(80*i),0,64,"spr_people"+peopleType));
             else {
                row.push(null);
             }
@@ -82,7 +108,7 @@ function createHeadRow(size=4) {
        for (var i = 0; i < 4; i++) {
            var temp = row[i];
            if (temp != null) {
-               temp.x = 24+(80*i);
+               temp.x = 8+(80*i);
                temp.y = 0;
            }
        }
@@ -171,7 +197,7 @@ var gameState = {
                     var head = row[j];
                     if (head != null && head.alive) {
                         gameState.score += 10 * this.multiplier
-                        head.destroy();
+                        head.animations.play("die",8,false,true);
                     }
                 }
             }
@@ -198,7 +224,8 @@ var gameState = {
             var head = this.getFirstHeadForColumn(columnIndex);
             if (head != null && head.foodType == type) {
                 var rowIndex = head.rowIndex;
-                head.destroy();
+                head.animations.play("die",8,false,true);
+                //head.destroy();
                 this.heads[0][columnIndex] = null;
                 this.score += 10 * gameState.multiplier;
                 return rowIndex;
@@ -210,11 +237,14 @@ var gameState = {
         return -1;
     },
     fireStock : function() {
-        for (var key in this.inputButtonStockMap) {
+        for (var key in gameState.inputButtonStockMap) {
             const stock = this.inputButtonStockMap[key];
             const myKey = key;
+            var cannon = gameState.inputCannonMap[key];
             var addedCheck = false;
+            
             if (stock != null) {
+                cannon.animations.play("fire",8,false);
                 var myTween = game.add.tween(stock);
                 myTween.to({y:-32},150,Phaser.Easing.Linear.None);
                 if (!addedCheck) {
@@ -232,7 +262,9 @@ var gameState = {
                         gameState.inputButtonStockMap[myKey] = null;
                     },this);
                 }
+                stock.alpha = 1;
                 myTween.start();
+                
             }
         }
     },
@@ -245,19 +277,19 @@ var gameState = {
         }
         if (this.stockedFood.length >= 1) {
             var topStock = this.stockedFood[0];
-            topStock.x = 326;
-            topStock.y = 388;
+            topStock.x = 312;
+            topStock.y = 394;
             topStock.width = 32;
             topStock.height = 32;
 
         }
         for (var i = 1; i < this.stockedFood.length; i++) {
             var myStock = this.stockedFood[i];
-            this.stockedFood[i].x = 326;
-            this.stockedFood[i].y = 421 + ((i-1)*20);
+            this.stockedFood[i].x = 364 + ((i-1)*20) + 8;
+            this.stockedFood[i].y = 394; 
             this.stockedFood[i].alpha = (i > 5) ? 0 : 1;
-            this.stockedFood[i].width = 16;
-            this.stockedFood[i].height = 16;
+            this.stockedFood[i].width = 20;
+            this.stockedFood[i].height = 20;
         }
         return stock;
     },
@@ -282,29 +314,29 @@ var gameState = {
 
         var stock = this.stockedFood.length;
         if (stock >= 5) return;
-        var item = (createFoodCitizen(type,332+(stock*20),426,16,"spr_macros"));
+        var item = (createFoodCitizen(type,332+(stock*20),426,16,"spr_macros_lg"));
         this.stockedFood.unshift(item);
         if (stock > 5) item.alpha = 0;
         if (this.stockedFood.length >= 1) {
             var topStock = this.stockedFood[0];
-            topStock.x = 326;
-            topStock.y = 388;
+            topStock.x = 312;
+            topStock.y = 394;
             topStock.width = 32;
             topStock.height = 32;
 
         }
         for (var i = 1; i < this.stockedFood.length; i++) {
             var myStock = this.stockedFood[i];
-            this.stockedFood[i].x = 326;
-            this.stockedFood[i].y = 421 + ((i-1)*16);
+            this.stockedFood[i].x = 364 + ((i-1)*20) + 8;
+            this.stockedFood[i].y = 394; 
             this.stockedFood[i].alpha = (i > 5) ? 0 : 1;
-            this.stockedFood[i].width = 16;
-            this.stockedFood[i].height = 16;
+            this.stockedFood[i].width = 20;
+            this.stockedFood[i].height = 20;
         }
     },
     create : function() {
         game.stage.backgroundColor = "#4488AA";
-
+        this.stage.disableVisibilityChange = true;
 
         this.mySprite = null;
         this.lastPoint= {};
@@ -350,11 +382,19 @@ var gameState = {
         const foodKingStartX = (320 + (320/2));
         const foodKingStartY = 190 - 16;
         
-        this.calorieLifeBar = createRectangle(370,454,245*(this.calories/100),20,0x2266FF);
+        this.calorieLifeBarBack = game.add.sprite(320,454,"ui_healthBar");
+        this.calorieLifeBarBack.frame = 1;
 
+        this.calorieLifeBar = game.add.sprite(320,454,"ui_healthBar");/*createRectangle(370,454,245*(this.calories/100),20,0x2266FF);*/
+        this.calorieLifeBar.frame = 0;
+
+        this.calorieCropBar = new Phaser.Rectangle(0, 0, this.calorieLifeBar.width, this.calorieLifeBar.height);
+
+        this.calorieLifeBar.crop(this.calorieCropBar);
+        
         var textStyle = { font: "24px Arial", fill: "#ffEEFF"};
 
-        this.scoreText = game.add.text(368, 397, "Score: " + this.score, textStyle);
+        this.scoreText = game.add.text(520, 397, "Score: " + this.score, textStyle);
 
 
         this.keyUp = game.input.keyboard.addKey(Phaser.Keyboard.UP);
@@ -447,12 +487,39 @@ var gameState = {
                 this.inputButtonSpriteMap[key.keyCode].alpha = 0.5;
                 if (this.inputButtonStockMap[key.keyCode] == null) {
                     var stock = this.popStock();
+                    
                     if (stock != null) {
                         stock = stock[0];
+                        var cannon = gameState.inputCannonMap[key.keyCode];
+                        if (cannon != null) {
+                            //console.log({cannon: cannon, stock: stock, text: "item_"+stock.foodType});
+                            cannon.animations.play("item_"+stock.foodType,1,true);
+                        }
+                        var foodType = stock.foodType;
+                        stock.destroy();
+                        stock = game.add.sprite(0,0,"spr_bullets");
+                        switch (foodType) {
+                            case foodTypes.CARBS:
+                            stock.frame = 0;
+                            break;
+                            case foodTypes.PROTEIN:
+                            stock.frame = 2;
+                            break;
+                            case foodTypes.ALCOHOL:
+                            stock.frame = 1;
+                            break;
+                            case foodTypes.FATS:
+                            stock.frame = 3;
+                            break;
+
+                        }
                         this.inputButtonStockMap[key.keyCode] = stock;
                         stock.centerX = this.inputButtonSpriteMap[key.keyCode].centerX;
-                        stock.centerY = this.inputButtonSpriteMap[key.keyCode].centerY;
+                        stock.centerY = this.inputButtonSpriteMap[key.keyCode].centerY-48;
+                        stock.alpha = 0;
+                        stock.foodType = foodType;
                     }
+                    
                 }
            },this);
            key.onUp.add(function(key) {
@@ -462,25 +529,43 @@ var gameState = {
 
         this.spaceKey.onDown.add(function(key) {
             this.inputButtonSpriteMap["SPACE"].alpha = 0.5;
+            this.inputButtonSpriteMap["SPACE"].frame = 1;
             gameState.fireStock();
             gameState.calories -= 2;
         },this);
         this.spaceKey.onUp.add(function(key) {
             this.inputButtonSpriteMap["SPACE"].alpha = 1;
+            this.inputButtonSpriteMap["SPACE"].frame = 0;
         },this);
 
         this.inputButtonSpriteMap = {
             "81" : createRectangle(16,388,64,64,0x7722FF),
             "87" : createRectangle(88,388,64,64,0x7722FF),
-            "69" : createRectangle(164,388,64,64,0x7722FF),
-            "82" : createRectangle(236,388,64,64,0x7722FF),
-            "SPACE" : createRectangle(8,456, 304, 16, 0x7722FF),
+            "69" : createRectangle(160,388,64,64,0x7722FF),
+            "82" : createRectangle(232,388,64,64,0x7722FF),
+            "SPACE" : game.add.sprite(8,446,"ui_space"),
         }
+        this.inputButtonSpriteMap["SPACE"].frame = 0;
         this.cannonSprites = [];
         for (var i = 0; i < 4; i++) {
-            var temp = game.add.sprite(21+(i*72),348,"spr_cannon");
-            temp.frame = i;
+            var temp = game.add.sprite(16+(i*72),338,"spr_cannon");
+            var overlay = game.add.sprite(16+(i*72),338,"spr_qwer");
+            //var anim = temp.animations.add("fire",[0,1,2,0]);
+            overlay.frame = i;
+            temp.animations.add("idle",[0]).play(100,false);
+            temp.animations.add("fire",[0,1,2,0]),
+            temp.animations.add("item_"+foodTypes.CARBS,[3]);
+            temp.animations.add("item_"+foodTypes.ALCOHOL,[4]);
+            temp.animations.add("item_"+foodTypes.PROTEIN,[5]);
+            temp.animations.add("item_"+foodTypes.FATS,[6]);
             this.cannonSprites.push(temp);
+        }
+
+        this.inputCannonMap = {
+            "81" : gameState.cannonSprites[0],
+            "87" : gameState.cannonSprites[1],
+            "69" : gameState.cannonSprites[2],
+            "82" : gameState.cannonSprites[3],
         }
         
         this.inputButtonStockMap = {
@@ -533,12 +618,14 @@ var gameState = {
         
     },
     update : function() {
-        this.calorieLifeBar.width= 245*(this.calories/100);
+        this.calorieCropBar.width= this.calorieLifeBarBack.width*(this.calories/100);
+        this.calorieLifeBar.crop(this.calorieCropBar);
         if (this.calories <= 0) {
             finalScore = this.score;
             game.state.start("score",true,false,null);
         }
         this.scoreText.text = "Score: " + this.score;
+        this.scoreText.x = (CANVAS_WIDTH-this.scoreText.width)-20;
         if (game.input.mousePointer.isDown) {
             console.log({x:game.input.mousePointer.x, y: game.input.mousePointer.y});
         }
