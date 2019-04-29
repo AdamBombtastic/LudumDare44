@@ -36,11 +36,13 @@ var loadState =  {
         game.load.spritesheet("ui_space","./graphics/ui_Space.png",284,28,2);
         game.load.spritesheet("ui_healthBar","./graphics/ui_healthBar.png",300,24,2);
 
+        game.load.image("ui_frame","./graphics/ui_frame.png");
+
     },
         
     create: function() {
 
-        game.state.start("game",true,false,null);
+        game.state.start("menu",true,false,null);
     }
     
 }
