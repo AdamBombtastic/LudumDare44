@@ -27,7 +27,18 @@ var loadState =  {
         game.load.spritesheet("spr_macros","./graphics/spr_macros.png",24,20,4);
         game.load.spritesheet("spr_cannon","./graphics/spr_cannon.png",64,100,7);
         game.load.spritesheet("spr_qwer","./graphics/spr_qwer.png",64,100,4);
+
         game.load.spritesheet("spr_foodKing", "./graphics/spr_FoodKing.png",78,80,4);
+
+        game.load.spritesheet("spr_citizenAvocado","./graphics/spr_citizenAvocado.png",46,46,8);
+        game.load.spritesheet("spr_citizenBagel","./graphics/spr_citizenBagel.png",52,44,8);
+        game.load.spritesheet("spr_citizenBread","./graphics/spr_citizenBread.png",46,60,8);
+        game.load.spritesheet("spr_citizenBean","./graphics/spr_citizenBean.png",44,42,8);
+        game.load.spritesheet("spr_citizenButter","./graphics/spr_citizenButter.png",34,52,8);
+        game.load.spritesheet("spr_citizenJuice","./graphics/spr_citizenJuice.png",60,58,8);
+        game.load.spritesheet("spr_citizenWater","./graphics/spr_citizenWater.png",52,48,8);
+        game.load.spritesheet("spr_citizenSausage","./graphics/spr_citizenSausage.png",76,38,8);
+
 
         game.load.spritesheet("spr_people1","./graphics/spr_people1.png",60,66,32);
         game.load.spritesheet("spr_people2","./graphics/spr_people2.png",60,66,32);
@@ -37,6 +48,7 @@ var loadState =  {
         game.load.spritesheet("ui_healthBar","./graphics/ui_healthBar.png",300,24,2);
 
         game.load.image("ui_frame","./graphics/ui_frame.png");
+        game.load.image("ui_bg","./graphics/ui_bg.png");
 
     },
         

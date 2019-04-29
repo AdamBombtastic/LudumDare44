@@ -152,6 +152,15 @@ var gameState = {
     lastRowCount: null,
     stage : 1,
     
+    animateCitizensOfType : function(type,anim) {
+        var list = this.citizens[type];
+        if (list != null) {
+            for (var i = 0; i < list.length; i++) {
+                var sprite = list[i];
+                sprite.animations.play(anim,8,true);
+            }
+        }
+    },
     getMaxInArray : function(arr) {
         var max = arr[0];
         for (var i = 0; i < arr.length; i++) {
@@ -201,18 +210,6 @@ var gameState = {
                     }
                 }
             }
-            /*(for (var i = 0; i < this.heads; i++) {
-                if (this.heads[i] == null) break;
-                for (var j = 0; j < this.heads[i].length; j++) {
-                    var head = this.heads[i][j];
-                    if (head != null && head.alive) {
-                        gameState.score += 10 * this.multiplier
-                        head.destroy();
-                    }
-                }
-                this.checkUpgradeDifficulty();
-            }*/
-            //this.heads = this.heads.splice(0,2);
             console.log("Got em all");
             this.calories +=25; 
             this.calories = (this.calories > 100) ? 100 : this.calories;
@@ -362,32 +359,37 @@ var gameState = {
         this.lastRowCount = null;
         this.stage = 1;
 
+        var sections = game.add.sprite(0,0,"ui_bg");
         var frame = game.add.sprite(0,0,"ui_frame");
 
-        //var sidePanel = createRectangle(0,0,320,380,0x000000);
-        //var inputPanel = createRectangle(0,380,640,100,0x444444);
-
-       
-        var fatSection = createRectangle(340,0,280,80,0xFFFF11);
-        var alcoholSection = createRectangle(340,300,280,80,0x8B4513);
-
-        var proteinSection = createRectangle(560,20,80,280,0xFF2222);
-        var carbSection = createRectangle(320,20,80,280,0xFFFFFF);  
+        function createFoodSprite(x,y,key) {
+            var tempSprite = game.add.sprite(x,y,key);
+            tempSprite.animations.add("dance",[0,1,2,3]);
+            tempSprite.animations.add("scared",[4,5,6,7]);
+            tempSprite.animations.play("dance",8,true);
+            return tempSprite;
+        }
+        this.citizens = {
+            0 : [createFoodSprite(352,140,"spr_citizenBagel"),createFoodSprite(382,140,"spr_citizenBagel"),createFoodSprite(352,200,"spr_citizenBread"),createFoodSprite(382,200,"spr_citizenBread")],
+            1 : [createFoodSprite(515,140,"spr_citizenBean"),createFoodSprite(550,140,"spr_citizenBean"),createFoodSprite(515,200,"spr_citizenSausage"),createFoodSprite(550,220,"spr_citizenSausage")],
+            2 :  [createFoodSprite(352,38,"spr_citizenButter"),createFoodSprite(382,38,"spr_citizenButter"),createFoodSprite(515,38,"spr_citizenAvocado"),createFoodSprite(550,38,"spr_citizenAvocado")],
+            3 : [createFoodSprite(352,312,"spr_citizenJuice"),createFoodSprite(382,312,"spr_citizenJuice"),createFoodSprite(515,312,"spr_citizenWater"),createFoodSprite(550,312,"spr_citizenWater")],
+        }
         
-        this.foodKingSprite = game.add.sprite(240,240,"spr_foodKing");//createRectangle(240,240,32,32,0xFFF5555);
-        //this.foodKingSprite.scale.setTo(2,2);
+        this.foodKingSprite = game.add.sprite(240,240,"spr_foodKing");
+
         this.foodKingSprite.centerX = (320 + (320/2));
-        this.foodKingSprite.centerY = 190 - 16;
+        this.foodKingSprite.centerY = 200;
         this.foodKingSprite.isLeft = false;
         this.foodKingSprite.isUp = false;
 
         const foodKingStartX = (320 + (320/2));
-        const foodKingStartY = 190 - 16;
+        const foodKingStartY = 200;
         
         this.calorieLifeBarBack = game.add.sprite(330,448,"ui_healthBar");
         this.calorieLifeBarBack.frame = 1;
 
-        this.calorieLifeBar = game.add.sprite(330,448,"ui_healthBar");/*createRectangle(370,454,245*(this.calories/100),20,0x2266FF);*/
+        this.calorieLifeBar = game.add.sprite(330,448,"ui_healthBar");
         this.calorieLifeBar.frame = 0;
 
         this.calorieCropBar = new Phaser.Rectangle(0, 0, this.calorieLifeBar.width, this.calorieLifeBar.height);
@@ -412,8 +414,9 @@ var gameState = {
         this.keyE = game.input.keyboard.addKey(Phaser.Keyboard.E);
         this.keyR = game.input.keyboard.addKey(Phaser.Keyboard.R);
 
-        
+       
         this.keyLeft.onDown.add(function() {
+            gameState.animateCitizensOfType(foodTypes.CARBS,"scared");
             var myTween = game.add.tween(this.foodKingSprite);
             myTween.to({centerX: 360},200,Phaser.Easing.Linear.None);
             myTween.onComplete.add(function() {
@@ -423,6 +426,7 @@ var gameState = {
             this.foodKingSprite.isLeft = true;
         },this);
         this.keyRight.onDown.add(function() {
+            gameState.animateCitizensOfType(foodTypes.PROTEIN,"scared");
             var myTween = game.add.tween(this.foodKingSprite);
             myTween.to({centerX: 610},200,Phaser.Easing.Linear.None);
             myTween.onComplete.add(function() {
@@ -432,6 +436,7 @@ var gameState = {
             this.foodKingSprite.isLeft = false;
         },this);
         this.keyUp.onDown.add(function() {
+            gameState.animateCitizensOfType(foodTypes.FATS,"scared");
             var myTween = game.add.tween(this.foodKingSprite);
             myTween.to({centerY: 32},200,Phaser.Easing.Linear.None);
             myTween.onComplete.add(function() {
@@ -441,6 +446,7 @@ var gameState = {
             this.foodKingSprite.isUp = true;
         },this);
         this.keyDown.onDown.add(function() {
+            gameState.animateCitizensOfType(foodTypes.ALCOHOL,"scared");
             var myTween = game.add.tween(this.foodKingSprite);
             myTween.to({centerY: 332},200,Phaser.Easing.Linear.None);
             myTween.onComplete.add(function() {
@@ -450,6 +456,7 @@ var gameState = {
             this.foodKingSprite.isUp = false;
         },this);
         this.keyLeft.onUp.add(function() {
+            gameState.animateCitizensOfType(foodTypes.CARBS,"dance");
             var myTween = game.add.tween(this.foodKingSprite);
             myTween.to({centerX: foodKingStartX, centerY: foodKingStartY},200,Phaser.Easing.Linear.None);
             myTween.onComplete.add(function() {
@@ -458,6 +465,7 @@ var gameState = {
             myTween.start();
         },this);
         this.keyUp.onUp.add(function() {
+            gameState.animateCitizensOfType(foodTypes.FATS,"dance");
             var myTween = game.add.tween(this.foodKingSprite);
             myTween.to({centerX: foodKingStartX, centerY: foodKingStartY},200,Phaser.Easing.Linear.None);
             myTween.onComplete.add(function() {
@@ -466,6 +474,7 @@ var gameState = {
             myTween.start();
         },this);
         this.keyDown.onUp.add(function() {
+            gameState.animateCitizensOfType(foodTypes.ALCOHOL,"dance");
             var myTween = game.add.tween(this.foodKingSprite);
             myTween.to({centerX: foodKingStartX, centerY: foodKingStartY},200,Phaser.Easing.Linear.None);
             myTween.onComplete.add(function() {
@@ -474,6 +483,7 @@ var gameState = {
             myTween.start();
         },this);
         this.keyRight.onUp.add(function() {
+            gameState.animateCitizensOfType(foodTypes.PROTEIN,"dance");
             var myTween = game.add.tween(this.foodKingSprite);
             myTween.to({centerX: foodKingStartX, centerY: foodKingStartY},200,Phaser.Easing.Linear.None);
             myTween.onComplete.add(function() {
@@ -494,7 +504,6 @@ var gameState = {
                         stock = stock[0];
                         var cannon = gameState.inputCannonMap[key.keyCode];
                         if (cannon != null) {
-                            //console.log({cannon: cannon, stock: stock, text: "item_"+stock.foodType});
                             cannon.animations.play("item_"+stock.foodType,1,true);
                         }
                         var foodType = stock.foodType;
@@ -552,7 +561,7 @@ var gameState = {
         for (var i = 0; i < 4; i++) {
             var temp = game.add.sprite(16+(i*72),338,"spr_cannon");
             var overlay = game.add.sprite(16+(i*72),338,"spr_qwer");
-            //var anim = temp.animations.add("fire",[0,1,2,0]);
+
             overlay.frame = i;
             temp.animations.add("idle",[0]).play(100,false);
             temp.animations.add("fire",[0,1,2,0]),
@@ -645,9 +654,6 @@ var gameState = {
         }
 
         var deltaTime = game.time.elapsed;
-        /*if (this.foodCitizens.length < 5) {
-            this.foodCitizens.push(createRandomFoodCitizen());
-        }*/
         this.rowTimer -= deltaTime;
         this.pointTimer -= deltaTime;
         if (this.rowTimer <= 0) {
