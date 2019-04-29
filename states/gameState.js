@@ -157,7 +157,7 @@ var gameState = {
         if (list != null) {
             for (var i = 0; i < list.length; i++) {
                 var sprite = list[i];
-                sprite.animations.play(anim,8,true);
+                sprite.animations.play(anim,6,true);
             }
         }
     },
@@ -366,7 +366,7 @@ var gameState = {
             var tempSprite = game.add.sprite(x,y,key);
             tempSprite.animations.add("dance",[0,1,2,3]);
             tempSprite.animations.add("scared",[4,5,6,7]);
-            tempSprite.animations.play("dance",8,true);
+            tempSprite.animations.play("dance",6,true);
             return tempSprite;
         }
         this.citizens = {
