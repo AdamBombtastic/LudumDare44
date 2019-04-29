@@ -152,6 +152,17 @@ var gameState = {
     lastRowCount: null,
     stage : 1,
     
+    createExplosionAtPosition : function(x,y,center=true) {
+        var anim = game.add.sprite(x,y,"fx_explosion");
+        anim.scale.setTo(1.2,1.2);
+        if (center) {
+            anim.centerX = x;
+            anim.centerY = y;
+        }
+        anim.animations.add("go");
+        anim.animations.play("go",12,false,true);
+        return anim;
+    },
     animateCitizensOfType : function(type,anim) {
         var list = this.citizens[type];
         if (list != null) {
@@ -187,7 +198,7 @@ var gameState = {
         for (var key in fireMap) {
             if (key != null && fireMap[key] != null) {
                 var type = fireMap[key].foodType;
-                var returnVal = this.checkHeadDamage(key,type);
+                var returnVal = this.checkHeadDamage(key,type,false);
                 success = success && returnVal != -1;
                 if (success) delRows.push(returnVal);
             }
@@ -204,6 +215,7 @@ var gameState = {
                 if (row == null) continue;
                 for (var j = 0; j < row.length; j++) {
                     var head = row[j];
+                    if (head != null) this.createExplosionAtPosition(head.centerX,head.centerY);
                     if (head != null && head.alive) {
                         gameState.score += 10 * this.multiplier
                         head.animations.play("die",8,false,true);
@@ -215,15 +227,16 @@ var gameState = {
             this.calories = (this.calories > 100) ? 100 : this.calories;
         }
     },
-    checkHeadDamage : function(myKey,type) {
+    checkHeadDamage : function(myKey,type,isSpecial=false) {
         var columnIndex = this.inputButtonColumnMap[myKey];
         if (columnIndex != null && this.heads.length > 0) {
             var head = this.getFirstHeadForColumn(columnIndex);
             if (head != null && head.foodType == type) {
                 var rowIndex = head.rowIndex;
+                if (isSpecial) this.createExplosionAtPosition(head.x,head.y);
                 head.animations.play("die",8,false,true);
                 //head.destroy();
-                this.heads[0][columnIndex] = null;
+                //this.heads[0][columnIndex] = null;
                 this.score += 10 * gameState.multiplier;
                 return rowIndex;
             }

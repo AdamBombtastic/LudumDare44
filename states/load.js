@@ -50,6 +50,8 @@ var loadState =  {
         game.load.image("ui_frame","./graphics/ui_frame.png");
         game.load.image("ui_bg","./graphics/ui_bg.png");
 
+        game.load.spritesheet("fx_explosion","./graphics/fx_explosion.png",68,68,11);
+
     },
         
     create: function() {
