@@ -11,6 +11,7 @@ var clientHeight = function() {return Math.max(document.documentElement.clientHe
 
 game.state.add("load",loadState);
 game.state.add("game",gameState);
+game.state.add("tutorial",tutorialState);
 game.state.add("menu",menuState);
 game.state.add("score",scoreState);
 
